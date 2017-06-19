@@ -1,0 +1,108 @@
+# -*- coding: cp1251 -*-
+
+#-------------------------------------------------------------------------------
+# Name:        Celebration's Alert
+# Purpose:     Celebrations module that will prevent about celebs and holidays from celebrations.txt list
+# Author:      Tony Ashman
+# Created:     20151221
+# Desccription:ѕервого числа каждого мес€ца вывод€тс€ уведомлени€ обо всех
+#              предсто€щих событи€х в данном мес€це.
+#              «а 3 дн€ выводитс€ уведомление о предсто€щим событии, если необходимо,
+#              то возникает предложение посетить что-то и что-то сделать, если
+#              это указано в списке celebrations.txt
+#              ¬ день праздника уведомить о событии и вызвать св€заное действие.
+#-------------------------------------------------------------------------------
+
+import os, datetime
+
+def russian_number_month(month):
+	if month=='€нварь': return '01'
+	elif month=='февраль': return '02'
+	elif month=='март': return '03'
+	elif month=='апрель': return '04'
+	elif month=='май': return '05'
+	elif month=='июнь': return '06'
+	elif month=='июль': return '07'
+	elif month=='август': return '08'
+	elif month=='сент€брь': return '09'
+	elif month=='окт€брь': return '10'
+	elif month=='но€брь': return '11'
+	elif month=='декабрь': return '12'
+
+def today_notice(listing, date):
+    result = []
+    for line in listing:
+        if line[0][:1] != '\t':
+            templine = line[1].split(' ')
+            if len(templine[0]) == 1:
+                day = '0' + templine[0]
+            else:
+                day = templine[0]
+            month = russian_number_month(templine[1])
+            try:
+                if (month+day) == str(date)[4:]:
+                    result.append("—егодн€ " + line[2] + " праздник " + line[0] + " и нужно делать: " + line[3][:-1])
+            except TypeError:
+                print('ѕроблема скорее всего в файле дат праздников, мес€ц написан неправильно')
+    return result
+
+def three_days_notice(listing, date):
+    result = []
+    dt = str(date)[4:]
+    delta1 = datetime.timedelta(days=1) # кол-во дней, за которое предупреждать о дне рождении
+    delta2 = datetime.timedelta(days=2) # кол-во дней, за которое предупреждать о дне рождении
+    delta3 = datetime.timedelta(days=3) # кол-во дней, за которое предупреждать о дне рождении
+    for line in listing:
+        if line[0][:1] != '\t':
+            templine = line[1].split(' ')
+            if len(templine[0]) == 1:
+                day = '0' + templine[0]
+            else:
+                day = templine[0]
+            month = russian_number_month(templine[1])
+            dt1 = datetime.datetime.strptime(month+day, "%m%d") - delta1
+            dt2 = datetime.datetime.strptime(month+day, "%m%d") - delta2
+            dt3 = datetime.datetime.strptime(month+day, "%m%d") - delta3
+            if dt1.strftime("%m%d") == dt:
+                result.append("«автра " + line[2] + " праздник " + line[0] + " и нужно делать: " + line[3][:-1])
+            elif dt2.strftime("%m%d") == dt:
+                result.append("ѕослезавтра " + line[2] + " праздник " + line[0] + " и нужно делать: " + line[3][:-1])
+            elif dt3.strftime("%m%d") == dt:
+                result.append("„ерез 2 дн€ " + line[2] + " праздник " + line[0] + " и нужно делать: " + line[3][:-1])
+    return result
+
+def monthly_notice(listing, date):
+    result = []
+    for line in listing:
+        if line[0][:1] != '\t':
+            templine = line[1].split(' ')
+            if len(templine[0]) == 1:
+                day = '0' + templine[0]
+            else:
+                day = templine[0]
+            month = russian_number_month(templine[1])
+            if month == str(date)[4:6]:
+                if len(result) == 0:
+                    result.append('¬ этом мес€це следующие праздники: ')
+                    result[0] += (line[0] + ' (' + day + '); ')
+                else:
+                    result[0] += (line[0] + ' (' + day + '); ')
+    if str(date)[6:] == '01':
+        return result
+    else:
+        result = []
+        return result
+
+def starter(date):
+    list_of_result = []
+    result = []
+    fp = os.getcwd() + '\\Personal\\celebrations.txt'
+    f = open(fp,'r')
+    for line in f:
+        linelist = line.split(' - ')
+        list_of_result.append(linelist)
+    f.close()
+    result += today_notice(list_of_result, date)
+    result += three_days_notice(list_of_result, date)
+    result += monthly_notice(list_of_result, date)
+    return result
