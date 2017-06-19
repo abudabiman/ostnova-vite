@@ -1,2 +1,2 @@
 # ostnova-vite
-sample of python programming
+Here's little sample of my python programming skills. It part of CRM system.
